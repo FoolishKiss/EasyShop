@@ -24,26 +24,32 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao
     public List<Category> getAllCategories()
     {
         // get all categories
+        // Creates a list to store each category from the database
         List<Category> categories = new ArrayList<>();
- 
+
+        // Query to get all rows from the database
         String query = """
                 SELECT *
                 FROM categories
                 """;
 
+        // try with resources to auto close all database resources
         try (Connection connection = getConnection();
              PreparedStatement statement = connection.prepareStatement(query);
              ResultSet results = statement.executeQuery())
         {
+            // Loops through the results and turns them into a category object and adds to list
             while (results.next())
             {
                 categories.add(mapRow(results));
             }
         }
+        // Catches any database errors and rethrows them
         catch (SQLException e)
         {
             throw new RuntimeException(e);
         }
+        // Returns the list of all categories
         return categories;
 
     }
@@ -51,15 +57,83 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao
     @Override
     public Category getById(int categoryId)
     {
-        // get category by id
+
+        // Query to get category by id
+        String query = """
+                SELECT *
+                FROM categories
+                WHERE category_id = ?
+                """;
+
+        // try with resources to auto close Connection, and PreparedStatement database resources
+        try (Connection connection = getConnection();
+             PreparedStatement statement = connection.prepareStatement(query))
+        {
+            // Binds the categoryId to ?
+            statement.setInt(1, categoryId);
+
+            // Execute the query
+            ResultSet results = statement.executeQuery();
+
+            // Checks if a category with id exists
+            if (results.next())
+            {
+                // Convert the result into a category
+                return mapRow(results);
+            }
+        }
+        // Catches any database errors and rethrows them
+        catch (SQLException e)
+        {
+            throw new RuntimeException(e);
+        }
+        // If no match return null
         return null;
     }
 
     @Override
     public Category create(Category category)
     {
-        // create a new category
+        // Query to insert/create a new category
+        String query = """
+                INSERT INTO categories (name, description)
+                VALUES (?, ?)
+                """;
+
+        // Try with resources
+        try (Connection connection = getConnection();
+             // Prepared statement with second arg to return the generated keys after Insert
+             PreparedStatement statement = connection.prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS)) {
+
+            // Bind category name, and description to ? placeholders
+            statement.setString(1, category.getName());
+            statement.setString(2, category.getDescription());
+
+            // Execute the INSERT query
+            statement.executeUpdate();
+
+            // Gets auto generated keys
+            ResultSet keys = statement.getGeneratedKeys();
+
+            // Check if a key is returned
+            if (keys.next())
+            {
+                // Reads the id of the new category
+                int id = keys.getInt(1);
+
+                // Gets the category from the database with new id
+                return getById(id);
+            }
+        }
+        // Catches any database errors and rethrows them
+        catch (SQLException e)
+        {
+            throw new RuntimeException(e);
+        }
+
+        // Return null if no keys 
         return null;
+
     }
 
     @Override
