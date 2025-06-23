@@ -1,4 +1,4 @@
-package org.yearup.controllers;
+        package org.yearup.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -12,7 +12,7 @@ import java.util.List;
 
 // add the annotations to make this a REST controller
 // add the annotation to make this controller the endpoint for the following url
-    // http://localhost:8080/categories
+// http://localhost:8080/categories
 // add annotation to allow cross site origin requests
 @RestController
 @RequestMapping("categories")
@@ -90,3 +90,4 @@ public class CategoriesController
         categoryDao.delete(id);
     }
 }
+

@@ -13,16 +13,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao
-{
-    public MySqlCategoryDao(DataSource dataSource)
-    {
+public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao {
+    public MySqlCategoryDao(DataSource dataSource) {
         super(dataSource);
     }
 
     @Override
-    public List<Category> getAllCategories()
-    {
+    public List<Category> getAllCategories() {
         // get all categories
         // Creates a list to store each category from the database
         List<Category> categories = new ArrayList<>();
@@ -36,17 +33,14 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao
         // try with resources to auto close all database resources
         try (Connection connection = getConnection();
              PreparedStatement statement = connection.prepareStatement(query);
-             ResultSet results = statement.executeQuery())
-        {
+             ResultSet results = statement.executeQuery()) {
             // Loops through the results and turns them into a category object and adds to list
-            while (results.next())
-            {
+            while (results.next()) {
                 categories.add(mapRow(results));
             }
         }
         // Catches any database errors and rethrows them
-        catch (SQLException e)
-        {
+        catch (SQLException e) {
             throw new RuntimeException(e);
         }
         // Returns the list of all categories
@@ -55,8 +49,7 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao
     }
 
     @Override
-    public Category getById(int categoryId)
-    {
+    public Category getById(int categoryId) {
 
         // Query to get category by id
         String query = """
@@ -67,8 +60,7 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao
 
         // Try with resources to auto close Connection, and PreparedStatement database resources
         try (Connection connection = getConnection();
-             PreparedStatement statement = connection.prepareStatement(query))
-        {
+             PreparedStatement statement = connection.prepareStatement(query)) {
             // Binds the categoryId to ?
             statement.setInt(1, categoryId);
 
@@ -76,15 +68,13 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao
             ResultSet results = statement.executeQuery();
 
             // Checks if a category with id exists
-            if (results.next())
-            {
+            if (results.next()) {
                 // Convert the result into a category
                 return mapRow(results);
             }
         }
         // Catches any database errors and rethrows them
-        catch (SQLException e)
-        {
+        catch (SQLException e) {
             throw new RuntimeException(e);
         }
         // If no match return null
@@ -92,8 +82,7 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao
     }
 
     @Override
-    public Category create(Category category)
-    {
+    public Category create(Category category) {
         // Query to insert/create (POST) a new category
         String query = """
                 INSERT INTO categories (name, description)
@@ -116,8 +105,7 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao
             ResultSet keys = statement.getGeneratedKeys();
 
             // Check if a key is returned
-            if (keys.next())
-            {
+            if (keys.next()) {
                 // Reads the id of the new category
                 int id = keys.getInt(1);
 
@@ -126,8 +114,7 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao
             }
         }
         // Catches any database errors and rethrows them
-        catch (SQLException e)
-        {
+        catch (SQLException e) {
             throw new RuntimeException(e);
         }
 
@@ -137,8 +124,7 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao
     }
 
     @Override
-    public void update(int categoryId, Category category)
-    {
+    public void update(int categoryId, Category category) {
         // Query to update (PUT) category
         String query = """
                 UPDATE categories
@@ -160,15 +146,13 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao
 
         }
         // Catches any database errors and rethrows them
-        catch (SQLException e)
-        {
+        catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
     @Override
-    public void delete(int categoryId)
-    {
+    public void delete(int categoryId) {
         // Query to delete category
         String query = """
                 DELETE FROM categories
@@ -187,11 +171,11 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao
 
         }
         // Catches any database errors and rethrows them
-        catch (SQLException e)
-        {
+        catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
+
 
 
     private Category mapRow(ResultSet row) throws SQLException
