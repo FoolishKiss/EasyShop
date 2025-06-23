@@ -65,7 +65,7 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao
                 WHERE category_id = ?
                 """;
 
-        // try with resources to auto close Connection, and PreparedStatement database resources
+        // Try with resources to auto close Connection, and PreparedStatement database resources
         try (Connection connection = getConnection();
              PreparedStatement statement = connection.prepareStatement(query))
         {
@@ -94,13 +94,13 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao
     @Override
     public Category create(Category category)
     {
-        // Query to insert/create a new category
+        // Query to insert/create (POST) a new category
         String query = """
                 INSERT INTO categories (name, description)
                 VALUES (?, ?)
                 """;
 
-        // Try with resources
+        // Try with resources to auto close Connection, and PreparedStatement resources
         try (Connection connection = getConnection();
              // Prepared statement with second arg to return the generated keys after Insert
              PreparedStatement statement = connection.prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS)) {
@@ -131,7 +131,7 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao
             throw new RuntimeException(e);
         }
 
-        // Return null if no keys 
+        // Return null if no keys
         return null;
 
     }
@@ -139,7 +139,33 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao
     @Override
     public void update(int categoryId, Category category)
     {
-        // update category
+        // Query to update (PUT) category
+        String query = """
+                UPDATE categories
+                SET name = ?, description = ?
+                WHERE category_id = ?
+                """;
+
+        // try with resources to auto close Connection, and PreparedStatement resources
+        try (Connection connection = getConnection();
+             PreparedStatement statement = connection.prepareStatement(query)) {
+
+            // Binds  Bind category name, description, and categoryId to ? placeholders
+            statement.setString(1, category.getName());
+            statement.setString(2, category.getDescription());
+            statement.setInt(3, categoryId);
+
+            // Execute the query
+            statement.executeUpdate();
+
+        }
+        // Catches any database errors and rethrows them
+        catch (SQLException e)
+        {
+            throw new RuntimeException(e);
+        }
+
+
     }
 
     @Override
