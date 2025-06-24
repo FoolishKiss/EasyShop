@@ -80,7 +80,7 @@ public class ProductsController
     public void updateProduct(@PathVariable int id, @RequestBody Product product)
     {
         try
-        {
+        {   // Switched create with update
             productDao.update(id, product);
         }
         catch(Exception ex)
