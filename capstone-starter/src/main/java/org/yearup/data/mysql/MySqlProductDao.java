@@ -23,39 +23,72 @@ public class MySqlProductDao extends MySqlDaoBase implements ProductDao
     {
         List<Product> products = new ArrayList<>();
 
-        String sql = "SELECT * FROM products " +
-                "WHERE (category_id = ? OR ? = -1) " +
-                "   AND (price <= ? OR ? = -1) " +
-                "   AND (color = ? OR ? = '') ";
+        // Starts building the sql query
+        StringBuilder sql = new StringBuilder("""
+                SELECT *
+                FROM products
+                WHERE 1=1
+                """);
 
-        categoryId = categoryId == null ? -1 : categoryId;
-        minPrice = minPrice == null ? new BigDecimal("-1") : minPrice;
-        maxPrice = maxPrice == null ? new BigDecimal("-1") : maxPrice;
-        color = color == null ? "" : color;
+        // Filter for category if one was provided
+        if (categoryId != null)
+            sql.append("AND category_id = ? ");
 
-        try (Connection connection = getConnection())
+        // Filter to select price greater than or equal to min price
+        if (minPrice != null)
+            sql.append("AND price >= ? ");
+
+        // Filter to select price lesser than or equal to max price
+        if (maxPrice != null)
+            sql.append("AND price <= ? ");
+
+        // Filter to match color if not empty or null
+        if (color != null && !color.isEmpty())
+            sql.append("AND color = ? ");
+
+        try (Connection connection = getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql.toString()))
         {
-            PreparedStatement statement = connection.prepareStatement(sql);
-            statement.setInt(1, categoryId);
-            statement.setInt(2, categoryId);
-            statement.setBigDecimal(3, minPrice);
-            statement.setBigDecimal(4, minPrice);
-            statement.setString(5, color);
-            statement.setString(6, color);
 
+            // Keeps track of the position of each ? placeholder
+            int index = 1;
+
+            // Binds categoryId to the placeholder, index++ makes sure the next parameter goes to next placeholder
+            if (categoryId != null)
+                statement.setInt(index++, categoryId);
+
+            // Binds minPrice to the placeholder, index++ makes sure the next parameter goes to next placeholder
+            if (minPrice != null)
+                statement.setBigDecimal(index++, minPrice);
+
+            // Binds maxPrice to the placeholder, index++ makes sure the next parameter goes to next placeholder
+            if (maxPrice != null)
+                statement.setBigDecimal(index++, maxPrice);
+
+            // Binds color to the placeholder, index++ makes sure the next parameter goes to next placeholder
+            if (color != null && !color.isEmpty())
+                statement.setString(index++, color);
+
+
+            // Execute the prepared statement
             ResultSet row = statement.executeQuery();
 
+            // Loops through each row in result set
             while (row.next())
             {
+                // Converts each row into a product
                 Product product = mapRow(row);
+
+                // Adds each product to list
                 products.add(product);
             }
         }
+        // Catches any database errors and rethrows them
         catch (SQLException e)
         {
             throw new RuntimeException(e);
         }
-
+        // Returns the list of matching products
         return products;
     }
 
