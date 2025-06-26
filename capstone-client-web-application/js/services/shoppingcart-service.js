@@ -102,6 +102,13 @@ class ShoppingCartService {
         this.cart.items.forEach(item => {
             this.buildItem(item, contentDiv)
         });
+
+        // Shows cart total
+        const totalDiv = document.createElement("div");
+        totalDiv.classList.add("cart-total");
+        totalDiv.innerHTML = `<h3>Total: $${this.cart.total.toFixed(2)}</h3>`;
+        contentDiv.appendChild(totalDiv);
+
     }
 
     buildItem(item, parent)

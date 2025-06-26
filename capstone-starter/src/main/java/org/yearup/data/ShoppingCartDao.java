@@ -12,5 +12,5 @@ public interface ShoppingCartDao
 
     void clear(int userId);
 
-    ShoppingCart getCart(int userId);
+
 }

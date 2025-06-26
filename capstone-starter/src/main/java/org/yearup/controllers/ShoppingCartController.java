@@ -9,6 +9,7 @@ import org.yearup.data.ProductDao;
 import org.yearup.data.ShoppingCartDao;
 import org.yearup.data.UserDao;
 import org.yearup.models.ShoppingCart;
+import org.yearup.models.ShoppingCartItem;
 import org.yearup.models.User;
 
 import java.security.Principal;
@@ -16,7 +17,7 @@ import java.security.Principal;
 // convert this class to a REST controller
 // only logged in users should have access to these actions
 @RestController
-@RequestMapping("/cart")
+@RequestMapping("cart")
 @CrossOrigin
 @PreAuthorize("isAuthenticated()")
 public class ShoppingCartController
@@ -45,10 +46,9 @@ public class ShoppingCartController
             String userName = principal.getName();
             // find database user by userId
             User user = userDao.getByUserName(userName);
-            int userId = user.getId();
 
             // use the shoppingcartDao to get all items in the cart and return the cart
-            return shoppingCartDao.getCart(userId);
+            return shoppingCartDao.getByUserId(user.getId());
         }
         catch(Exception e)
         {
@@ -59,15 +59,16 @@ public class ShoppingCartController
     // add a POST method to add a product to the cart - the url should be
     // https://localhost:8080/cart/products/15 (15 is the productId to be added
     @PostMapping("/products/{productId}")
-    public void addProduct(@PathVariable int productId, Principal principal) {
+    public ShoppingCart addProduct(@PathVariable int productId, Principal principal) {
         try {
 
             // Get user info from the database using username
             String userName = principal.getName();
             User user = userDao.getByUserName(userName);
-            int userId = user.getId();
 
-            shoppingCartDao.addOrIncrement(userId, productId);
+            shoppingCartDao.addOrIncrement(user.getId(), productId);
+
+            return shoppingCartDao.getByUserId(user.getId());
 
         } catch (Exception e) {
 
@@ -79,8 +80,9 @@ public class ShoppingCartController
     // add a PUT method to update an existing product in the cart - the url should be
     // https://localhost:8080/cart/products/15 (15 is the productId to be updated)
     // the BODY should be a ShoppingCartItem - quantity is the only value that will be updated
-    public void updateQuantity(@PathVariable int productId,
-                               @RequestBody shoppingCartItem item,
+    @PutMapping("/products/{productId}")
+    public ShoppingCart updateQuantity(@PathVariable int productId,
+                               @RequestBody ShoppingCartItem item,
                                Principal principal) {
 
         try {
@@ -88,7 +90,9 @@ public class ShoppingCartController
             // Get user info from the database using username
             String userName = principal.getName();
             User user = userDao.getByUserName(userName);
-            int userId = user.getId();
+            shoppingCartDao.update(user.getId(), productId, item.getQuantity());
+
+            return shoppingCartDao.getByUserId(user.getId());
 
         } catch (Exception e) {
 
@@ -101,12 +105,14 @@ public class ShoppingCartController
     // add a DELETE method to clear all products from the current users cart
     // https://localhost:8080/cart
     @DeleteMapping
-    public void clearCart(Principal principal) {
+    public ShoppingCart clearCart(Principal principal) {
         try {
 
             String userName = principal.getName();
             User user = userDao.getByUserName(userName);
-            int userId = user.getId();
+            shoppingCartDao.clear(user.getId());
+
+            return new ShoppingCart();
 
         } catch (Exception e) {
 
