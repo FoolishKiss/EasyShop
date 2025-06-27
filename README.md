@@ -116,7 +116,6 @@ capstone-starter/
 * Sign up button on frontend
 * Email confirmation on registration
 * Order history and invoice generation
-* Frontend React/Vue app integration
 
 ---
 
