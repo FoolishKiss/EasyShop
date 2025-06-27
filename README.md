@@ -113,6 +113,7 @@ capstone-starter/
 ## 🧠 Future Enhancements
 
 * Add payment integration (Stripe/PayPal)
+* Sign up button on frontend
 * Email confirmation on registration
 * Order history and invoice generation
 * Frontend React/Vue app integration
